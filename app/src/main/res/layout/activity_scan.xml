@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.bocasystems.com.sample.MainActivity$PlaceholderFragment">
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="257dp"
+        android:layout_height="45dp"
+        android:layout_above="@+id/FGLText"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="55dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="65dp"
+        android:layout_marginBottom="-60dp"
+        android:text="@string/Screen_Title"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+
+    <Button
+        android:id="@+id/Transmit"
+        android:layout_width="167dp"
+        android:layout_height="134dp"
+        android:layout_below="@+id/FGLText"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="-17dp"
+        android:text="@string/Stampare" />
+
+
+    <EditText
+        android:id="@+id/FGLText"
+        android:layout_width="550dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="26dp"
+        android:layout_marginTop="130dp"
+        android:layout_marginEnd="16dp"
+        android:ems="10"
+        android:hint="@string/String_TEST1"
+        android:inputType="text">
+
+        <requestFocus />
+    </EditText>
+
+    <!--<Button
+        android:id="@+id/btnTransmitFGL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="150dp"
+        android:layout_marginBottom="435dp"
+        android:text="@string/Button_FGL" />-->
+
+    <Button
+        android:id="@+id/Close"
+        android:layout_width="146dp"
+        android:layout_height="134dp"
+        android:layout_below="@+id/FGLText"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="12dp"
+        android:layout_marginLeft="67dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="-17dp"
+        android:layout_toRightOf="@+id/btnWIFI"
+        android:text="@string/String_Return" />
+
+    <TextView
+        android:id="@+id/PrinterStatus"
+        android:layout_width="600dp"
+        android:layout_height="150dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="690dp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:ems="10" />
+
+
+</RelativeLayout>
