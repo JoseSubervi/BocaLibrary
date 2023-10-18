@@ -120,6 +120,8 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.Manifest;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -181,6 +183,10 @@ import android.util.Log;
 import android.os.Looper;
 import java.util.ArrayList;
 import bocasystems.com.sdk.BocaSystemsSDK;
+//import it.custom.printer.api.android.CustomAndroidAPI;
+//import it.custom.printer.api.android.CustomException;
+//import it.custom.printer.api.android.CustomPrinter;
+//import it.custom.printer.api.android.PrinterFont;
 
 import android.os.AsyncTask;                //4.0
 import android.content.Context;             //4.0
@@ -238,6 +244,7 @@ public class MainActivity extends Activity
     private String DialogIP = "";
     private Button Go_backk;
     private ImageView IconGroup;
+    private ImageView IconGroupSettings;
     public BluetoothAdapter myBluetoothAdapter;
     public TextView text;
     public ListView myListView;
@@ -287,9 +294,11 @@ public class MainActivity extends Activity
     static String InterfaceOfChoice = "NONE";           //4.0
 
     private GoogleApiClient client;                     //4.0 maybe make local see onStop and onStart
+//    private CustomPrinter prnDevice;
 
     //API Ticket
-    private static final String API_URL = "http://kennedy.preview.mmm.it/api/QRCodeController.aspx/CheckQRCode";
+    //private static final String API_URL = "http://kennedy.preview.mmm.it/api/QRCodeController.aspx/CheckQRCode";
+    private static final String API_URL = "https://eventi.rfkitalia.org/api/QRCodeController.aspx/CheckQRCode";
 
     class MyBocaSystemsSDK extends BocaSystemsSDK {
         @Override
@@ -311,6 +320,7 @@ public class MainActivity extends Activity
         }
     }
     MyBocaSystemsSDK boca = null;
+
     private ArrayList<String> statusList = new ArrayList<String>();
 
     static public Handler mHandler;                     //4.0
@@ -372,27 +382,30 @@ public class MainActivity extends Activity
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         String savedIPAddress = preferences.getString("IPAddress", "");
 
+        IconGroupSettings = findViewById(R.id.IconSettings_Main);
+        Log.d("YourTag", "IconGroupSettings initialized successfully");
         IconGroup = findViewById(R.id.IconGroup);
+        IconGroup.setColorFilter(getResources().getColor(R.color.colorSettings));
         IconGroup.setImageResource(R.drawable.no_wifi);
         FGL_Text = findViewById(R.id.FGLText);
 
-        if(!savedIPAddress.isEmpty()){
-            IPAddress = savedIPAddress;
-            InterfaceOfChoice = "WIFI";
-            if (!connected)
-            {
-                new BocaConnect(MainActivity.this).execute("", null, "");
-                //boca.Open_WIFI(IPAddress);
-            }
-            else
-            {
-                IconGroup.setImageResource(R.drawable.no_wifi);
-                AppendStatus("Disconnecting from WIFI... ");
-                boca.CloseSessionWIFI();
-                connected = false;
-                SetupScreen();              //4.0 enable or disable buttons on GUI as appropriate for current connection state
-            }
-        }
+//        if(!savedIPAddress.isEmpty()){
+//            IPAddress = savedIPAddress;
+//            InterfaceOfChoice = "WIFI";
+//            if (!connected)
+//            {
+//                new BocaConnect(MainActivity.this).execute("", null, "");
+//                //boca.Open_WIFI(IPAddress);
+//            }
+//            else
+//            {
+//                //IconGroup.setImageResource(R.drawable.no_wifi);
+//                AppendStatus("Disconnecting from WIFI... ");
+//                boca.CloseSessionWIFI();
+//                connected = false;
+//                SetupScreen();              //4.0 enable or disable buttons on GUI as appropriate for current connection state
+//            }
+//        }
 
         Connect_Disconnect_WIFI = findViewById(R.id.btnWIFI);           //3.0
         //Connect_Disconnect_BT = findViewById(R.id.btnConnect);          //3.0
@@ -635,18 +648,54 @@ public class MainActivity extends Activity
             }
         });
 
+        IconGroupSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    Log.d("ResponseDETAILs", "Ok il bro è entrato");
+                    showResultDialog(true,"",true, false);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
         //Call transmit command routine with FGL string command
         Transmit.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 try
                 {
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                    String savedIPAddress = preferences.getString("IPAddress", "");
+
                     CharSequence msg = "";
                     msg = FGL_Text.getText();
                     if (0 == msg.length())
                     {
                         msg = "<S1>";
                         FGL_Text.setText(msg);
+                    }
+
+                    if(!savedIPAddress.isEmpty()){
+                        IPAddress = savedIPAddress;
+                        InterfaceOfChoice = "WIFI";
+                        connected = true;
+                        if (connected)
+                        {
+                            Log.d("Response conessione", "Conessione fatta");
+                            new BocaConnect(MainActivity.this).execute("", null, "");
+                            //boca.Open_WIFI(IPAddress);
+                        }
+//                        else
+//                        {
+//                            Log.d("Response conessione", "Conessione close all'inizio");
+//                            //IconGroup.setImageResource(R.drawable.no_wifi);
+//                            AppendStatus("Disconnecting from WIFI... ");
+//                            boca.CloseSessionWIFI();
+//                            connected = false;
+//                            SetupScreen();              //4.0 enable or disable buttons on GUI as appropriate for current connection state
+//                        }
                     }
 
                     onTestApiButtonClicked(msg.toString());
@@ -1005,16 +1054,35 @@ public class MainActivity extends Activity
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
+    private void DialogResult(String title, String message){
+        //Log.d("ResponseDETAILSDialog", "DETAILS else?");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton("OK", null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
 
-    private void showResultDialog(boolean isSuccess, String message) {
-    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    builder.setTitle(isSuccess ? "Success" : "Error");
-    builder.setMessage(message);
-    builder.setPositiveButton("OK", null);
-    AlertDialog dialog = builder.create();
-    dialog.show();
-}
-
+    private void showResultDialog(boolean isSuccess, String message, boolean isDetail, boolean SaveIp) {
+        if(isDetail){
+            Log.d("ResponseDETAILSDialog", "DETAILS?");
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+            String savedIPAddress = preferences.getString("IPAddress", "");
+            if(SaveIp){
+                Log.d("Verified IP Dialog save", savedIPAddress);
+                DialogResult("IP Registrato con essito", savedIPAddress);
+            }else{
+                Log.d("Verified IP Dialog", savedIPAddress);
+                DialogResult("IP Attuale",
+                        savedIPAddress.isEmpty() ? "Attualmente non esiste un IP registrato" : savedIPAddress);
+            }
+        }
+        else{
+            Log.d("ResponseDETAILSDialog", "DETAILS else?");
+            DialogResult(isSuccess ? "Success" : "Error", message);
+        }
+    }
     public void onTestApiButtonClicked(String qrCode) {
         JSONObject requestBody = new JSONObject();
         try {
@@ -1035,8 +1103,30 @@ public class MainActivity extends Activity
                             String dJsonString = response.getString("d");
                             JSONObject dJsonObject = new JSONObject(dJsonString);
 
-                            if(!responseString.contains("\"success\\\":true")) {
-                                showResultDialog(false, "Wrong code.");
+                            String nome = dJsonObject.getString("nome");
+                            String cognome = dJsonObject.getString("cognome");
+
+//                            if(responseString.contains("\"success\\\":false") && responseString.contains("\"ingresso\\\":false")){
+//                                showResultDialog(false, "Invito non confermato.", false, false);
+//                                return;
+//                            }
+//
+//                            if(responseString.contains("\"success\\\":false")
+//                                    || responseString.contains("\"success\\\":true")
+//                                    && responseString.contains("\"ingresso\\\":true"))
+//                            {
+//
+//                                String msg = "Utente {nome} {cognome} già registrato.";
+//                                msg = msg.replace("{nome}", nome);
+//                                msg = msg.replace("{cognome}", cognome);
+//
+//                                showResultDialog(false, msg, false, false);
+//                                return;
+//                            }
+
+                            if(responseString.contains("\"success\\\":false")) {
+                                showResultDialog(false, "Wrong code.", false, false);
+                                return;
                             }
                             else{
                                 String textValue = dJsonObject.getString("text");
@@ -1045,7 +1135,23 @@ public class MainActivity extends Activity
                                 if (!responseString.contains("<p>"))
                                     responseString += "<p>";
 
+                                IconGroup.setColorFilter(getResources().getColor(R.color.greenIconColor));
+                                IconGroup.setImageResource(R.drawable.ico_wifi);
                                 boca.SendString(responseString);
+                                new Handler().postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        //IconGroup.setImageResource(R.drawable.no_wifi);
+                                        AppendStatus("Disconnecting from WIFI... ");
+                                        boca.CloseSessionWIFI();
+                                        connected = false;
+                                        SetupScreen();              //4.0 enable or disable buttons on GUI as appropriate for current connection state
+                                        IconGroup.setColorFilter(getResources().getColor(R.color.colorSettings));
+                                        IconGroup.setImageResource(R.drawable.no_wifi);
+                                    }
+                                }, 2000);
+//                                Thread.sleep(1000);
+//                                IconGroup.setImageResource(R.drawable.no_wifi);
                             }
 
                         } catch (JSONException e) {
@@ -1059,15 +1165,15 @@ public class MainActivity extends Activity
                         String errorMessage;
                         if (error instanceof AuthFailureError) {
                             errorMessage = "Authentication Failure";
-                            showResultDialog(false, errorMessage);
+                            showResultDialog(false, errorMessage, false, false);
                         } else if (error.networkResponse != null && error.networkResponse.data != null) {
                             errorMessage = new String(error.networkResponse.data);
-                            showResultDialog(false, errorMessage);
+                            showResultDialog(false, errorMessage, false, false);
                         } else {
                             errorMessage = error.getMessage();
-                            showResultDialog(false, errorMessage);
+                            showResultDialog(false, errorMessage, false, false);
                         }
-                        showResultDialog(false, errorMessage);
+                        showResultDialog(false, errorMessage, false, false);
                     }
                 }) {
             @Override
@@ -1084,8 +1190,8 @@ public class MainActivity extends Activity
     public void showAlertDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        builder.setTitle("IP Adress")
-                .setMessage("Write the IP Adress.")
+        builder.setTitle("IP Address")
+                .setMessage("Write the IP Address.")
                 .setCancelable(false);
 
         final EditText input = new EditText(this);
@@ -1095,50 +1201,43 @@ public class MainActivity extends Activity
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                connected = false;
-                DialogIP = input.getText().toString();
 
+                IPAddress = input.getText().toString();
+                InterfaceOfChoice = "WIFI";
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
                 String savedIPAddress = preferences.getString("IPAddress", "");
 
-                IPAddress = DialogIP;      //4.0
-                InterfaceOfChoice = "WIFI";
+                if (input.getText().toString().isEmpty()){
+                    DialogResult("Error", "Incorrect IP or not valid.");
+                    return;
+                }
 
-                if (IPAddress.equals(savedIPAddress)) {
-                    IconGroup.setImageResource(R.drawable.ico_wifi);
-                    if(!savedIPAddress.isEmpty()){
+                if(savedIPAddress.isEmpty()){
+
+                    try {
+                        SharedPreferences.Editor editor = preferences.edit();
+                        editor.putString("IPAddress", input.getText().toString());
+                        editor.apply();
+
+                    } catch (Exception e) {
+                        Log.e("MyApp", "Error al guardar la dirección IP en SharedPreferences: " + e.getMessage());
+                    }
+
+                    showResultDialog(true, IPAddress,true, true);
+                }
+
+                if(!savedIPAddress.isEmpty()){
+                    if(!input.getText().toString().equals(savedIPAddress)){
                         IPAddress = savedIPAddress;
-                        InterfaceOfChoice = "WIFI";
-                        if (!connected)
-                        {
-                            AppendStatus("Disconnecting from WIFI... ");
-                            boca.CloseSessionWIFI();
-                        }
-                        else
-                        {
-                            IconGroup.setImageResource(R.drawable.no_wifi);
-                            connected = false;
-                            SetupScreen();              //4.0 enable or disable buttons on GUI as appropriate for current connection state
-                        }
+                        SharedPreferences.Editor editor = preferences.edit();
+                        editor.putString("IPAddress", input.getText().toString());
+                        editor.apply();
+                        showResultDialog(true, IPAddress,true, true);
+                    } else{
+                        DialogResult("Avviso", "l'indirizzo IP è gia registrato");
                     }
                 }
 
-                if (!connected)
-                {
-                    if(IPAddress.equals("")) {
-                        AppendStatus("Enter an IP Address in the FGL text field and then connect");
-                    }
-                    else{
-                    new BocaConnect(MainActivity.this).execute("", null, "");    //4.0
-                    }
-                }
-                else
-                {
-                    AppendStatus("Disconnecting from WIFI... ");
-                    boca.CloseSessionWIFI();
-                    connected = false;
-                    SetupScreen();              //4.0 enable or disable buttons on GUI as appropriate for current connection state
-                }
             }
         });
 
@@ -2216,7 +2315,7 @@ public class MainActivity extends Activity
         protected void onPostExecute(String device){
             super.onPostExecute(device);
 
-            MainActivity mainActivity = activityReference.get();     //4.0
+            final MainActivity mainActivity = activityReference.get();     //4.0
             if (mainActivity != null) {
 
                 Context context;
@@ -2234,59 +2333,28 @@ public class MainActivity extends Activity
 
                     case "WIFI":
                         connected = mainActivity.boca.OpenSessionWIFI(IPAddress, context);
-                        if(!connected){
-                                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                                builder.setTitle("Error");
-                                builder.setMessage("Incorrect IP or not valid.");
-                                IconGroup.setImageResource(R.drawable.no_wifi);
-                                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-                                    String savedIPAddress = preferences.getString("IPAddress", "");
-                                    if(!savedIPAddress.isEmpty()){
-                                        IconGroup.setImageResource(R.drawable.ico_wifi);
-                                    }
-                                    IconGroup.setImageResource(R.drawable.no_wifi);
-                                    if(!savedIPAddress.isEmpty()){
-                                        IPAddress = savedIPAddress;
-                                        InterfaceOfChoice = "WIFI";
-                                        if (!connected)
-                                        {
-                                            AppendStatus("Disconnecting from WIFI... ");
-                                            boca.CloseSessionWIFI();
-                                            new BocaConnect(MainActivity.this).execute("", null, "");
-                                        }
-                                        else
-                                        {
-                                            IconGroup.setImageResource(R.drawable.no_wifi);
-                                            connected = false;
-                                            SetupScreen();              //4.0 enable or disable buttons on GUI as appropriate for current connection state
-                                        }
-                                    }
-                                }
-                                });
-                                AlertDialog dialog = builder.create();
-                                dialog.show();
 
+                        try {
+                            IconGroup.setImageResource(R.drawable.no_wifi);
+                            String ipAddressFloat = IPAddress;
+
+                            // Save the float value to SharedPreferences
+                            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                            SharedPreferences.Editor editor = preferences.edit();
+
+                            editor.putString("IPAddress", ipAddressFloat);
+                            editor.apply();
+
+
+                        } catch (NumberFormatException e) {
+                            Log.d("Response120", e.toString());
                         }
-                        else{
-                            try {
-                                String ipAddressFloat = IPAddress;
-                                // Save the float value to SharedPreferences
-                                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-                                SharedPreferences.Editor editor = preferences.edit();
-                                editor.putString("IPAddress", IPAddress);
-                                editor.apply();
-                                IconGroup.setImageResource(R.drawable.ico_wifi);
-                            } catch (NumberFormatException e) {
-                            }
-                            mainActivity.SetupScreen();              //4.0 enable or disable buttons on GUI as appropriate for current connection state
-                            mainActivity.ConnectMessage.setVisibility(View.INVISIBLE);
-                        }
+
+                        IconGroup.setImageResource(R.drawable.no_wifi);
+                        mainActivity.SetupScreen();              //4.0 enable or disable buttons on GUI as appropriate for current connection state
+                        mainActivity.ConnectMessage.setVisibility(View.INVISIBLE);
 
                         break;
-
                     default:
                         break;
                 }
