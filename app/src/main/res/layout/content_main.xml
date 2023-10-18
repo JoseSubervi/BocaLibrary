@@ -470,10 +470,23 @@
         android:layout_alignParentTop="true"
         android:layout_marginStart="259dp"
         android:layout_marginLeft="-12dp"
-        android:layout_marginTop="31dp"
+        android:layout_marginTop="16dp"
         android:layout_marginBottom="-17dp"
         android:layout_toRightOf="@+id/logoImageView"
         android:contentDescription="Icon check" />
+
+    <ImageView
+        android:id="@+id/IconSettings_Main"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/outline_settings_black_36"
+        android:text="See_IP"
+        app:layout_anchorGravity="bottom|end" />
 
 
     <ImageView
